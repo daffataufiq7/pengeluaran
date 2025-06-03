@@ -130,15 +130,15 @@ function App() {
     return (
       <Grid container sx={{ minHeight: '100vh', background: '#b39ddb' }}>
         {/* Kiri: Ilustrasi & Info */}
-        <Grid item xs={12} md={6} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', bgcolor: '#7c4dff' }}>
+        <Grid {...{ item: true, xs: 12, md: 6 }} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', bgcolor: '#7c4dff' }}>
           <Box sx={{ color: 'white', textAlign: 'center', px: 6 }}>
             <Typography variant="h4" fontWeight={700} gutterBottom>Catatan Pengeluaran Gen Z</Typography>
-            <Box component="img" src="uangnew.jpg" alt="Ilustrasi" sx={{ width: 180, my: 4 }} />
+            <img src="uangnew.jpg" alt="Ilustrasi" style={{ width: 180, margin: '2rem 0' }} />
             <Typography variant="body1" sx={{ mb: 4 }}>Nabunglah dan Irit wahai anak muda</Typography>
           </Box>
         </Grid>
         {/* Kanan: Form Login/Register */}
-        <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'white' }}>
+        <Grid {...{ item: true, xs: 12, md: 6 }} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'white' }}>
           <Box sx={{ width: 340, p: 4 }}>
             <Typography variant="h5" fontWeight={700} gutterBottom align="left">{showRegister ? 'Create Account' : 'Login'}</Typography>
             <Typography variant="body2" align="left" sx={{ mb: 2 }}>
