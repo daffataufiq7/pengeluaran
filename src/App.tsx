@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Box, Typography, Button, TextField, Paper, List, ListItem, ListItemText, IconButton, AppBar, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Divider, Checkbox, FormControlLabel } from '@mui/material';
+import { Container, Box, Typography, Button, TextField, Paper, List, ListItem, ListItemText, IconButton, AppBar, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Checkbox, FormControlLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Expense {
