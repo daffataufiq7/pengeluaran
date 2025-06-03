@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Box, Typography, Button, TextField, Paper, List, ListItem, ListItemText, IconButton, AppBar, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Container, Box, Typography, Button, TextField, Paper, List, ListItem, ListItemText, IconButton, AppBar, Toolbar, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Divider, Checkbox, FormControlLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 interface Expense {
@@ -128,42 +128,69 @@ function App() {
   // UI
   if (!isLoggedIn) {
     return (
-      <Container maxWidth="xs" sx={{ mt: 8 }}>
-        <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h5" align="center" gutterBottom>
-            {showRegister ? 'Buat Akun' : 'Login'}
-          </Typography>
-          <TextField
-            label="Username"
-            fullWidth
-            margin="normal"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          {authError && <Typography color="error" variant="body2">{authError}</Typography>}
-          <Box mt={2}>
-            {showRegister ? (
-              <>
-                <Button variant="contained" fullWidth onClick={handleRegister}>Buat Akun</Button>
-                <Button fullWidth sx={{ mt: 1 }} onClick={() => { setShowRegister(false); setAuthError(''); }}>Sudah punya akun? Login</Button>
-              </>
-            ) : (
-              <>
-                <Button variant="contained" fullWidth onClick={handleLogin}>Login</Button>
-                <Button fullWidth sx={{ mt: 1 }} onClick={() => { setShowRegister(true); setAuthError(''); }}>Belum punya akun? Daftar</Button>
-              </>
-            )}
+      <Grid container sx={{ minHeight: '100vh', background: '#b39ddb' }}>
+        {/* Kiri: Ilustrasi & Info */}
+        <Grid item xs={12} md={6} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', justifyContent: 'center', bgcolor: '#7c4dff' }}>
+          <Box sx={{ color: 'white', textAlign: 'center', px: 6 }}>
+            <Typography variant="h4" fontWeight={700} gutterBottom>Catatan Pengeluaran Gen Z</Typography>
+            <Box component="img" src="uangnew.jpg" alt="Ilustrasi" sx={{ width: 180, my: 4 }} />
+            <Typography variant="body1" sx={{ mb: 4 }}>Nabunglah dan Irit wahai anak muda</Typography>
           </Box>
-        </Paper>
-      </Container>
+        </Grid>
+        {/* Kanan: Form Login/Register */}
+        <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'white' }}>
+          <Box sx={{ width: 340, p: 4 }}>
+            <Typography variant="h5" fontWeight={700} gutterBottom align="left">{showRegister ? 'Create Account' : 'Login'}</Typography>
+            <Typography variant="body2" align="left" sx={{ mb: 2 }}>
+              {showRegister ? 'Sudah punya akun? ' : "Don't have an account? "}
+              <Button size="small" sx={{ textTransform: 'none', p: 0, minWidth: 0 }} onClick={() => { setShowRegister(!showRegister); setAuthError(''); }}>
+                {showRegister ? 'Login' : 'Create your account'}
+              </Button>
+            </Typography>
+            <TextField
+              label="Username or Email"
+              fullWidth
+              margin="normal"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+            {showRegister && (
+              <TextField
+                label="Konfirmasi Password"
+                type="password"
+                fullWidth
+                margin="normal"
+                value={password}
+                disabled
+              />
+            )}
+            {authError && <Typography color="error" variant="body2" sx={{ mt: 1 }}>{authError}</Typography>}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+              <FormControlLabel control={<Checkbox size="small" />} label="Remember me" />
+              <Button size="small" sx={{ textTransform: 'none', p: 0, minWidth: 0 }}>Forgot password?</Button>
+            </Box>
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ mt: 2, bgcolor: '#7c4dff', '&:hover': { bgcolor: '#512da8' } }}
+              onClick={showRegister ? handleRegister : handleLogin}
+            >
+              {showRegister ? 'Sign Up' : 'Login'}
+            </Button>
+            <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', mt: 4, color: '#bdbdbd', fontWeight: 700 }}>
+              dappataufiq.com
+            </Typography>
+          </Box>
+        </Grid>
+      </Grid>
     );
   }
 
