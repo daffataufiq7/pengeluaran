@@ -4,14 +4,18 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Drawer, List as MUIList, ListItemButton, ListItemIcon, Divider, InputLabel, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { Drawer, List as MUIList, ListItemButton, ListItemIcon, Divider, InputLabel } from '@mui/material';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart, BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement } from 'chart.js';
 import dayjs from 'dayjs';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Avatar } from '@mui/material';
 import supabase from './supabaseClient';
 import React, { useState, useMemo, useEffect } from 'react';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 Chart.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 function getTodayDate() {
@@ -99,6 +103,11 @@ function App() {
   const doughnutColors = [
     '#7c4dff', '#21cbf3', '#ffb300', '#ff5252', '#66bb6a', '#ab47bc', '#29b6f6', '#ef5350', '#ffa726', '#8d6e63',
   ];
+
+  // Total pengeluaran keseluruhan
+  const totalAll = expenses.reduce((sum, e) => sum + e.amount, 0);
+  // Total pengeluaran bulan yang dipilih
+  const totalMonth = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
   // Handle register
   const handleRegister = async () => {
@@ -245,6 +254,11 @@ function App() {
     return byDate;
   }, [expenses, fullDates]);
 
+  // State untuk dialog pengeluaran per tanggal (pastikan hanya ada satu deklarasi)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [openDateDialog, setOpenDateDialog] = useState(false);
+  const [dateDialogExpenses, setDateDialogExpenses] = useState<Expense[]>([]);
+
   // UI
   if (!isLoggedIn) {
     return (
@@ -350,6 +364,15 @@ function App() {
     dashboardContent = (
       <Box>
         <Typography variant="h6" gutterBottom>Akumulasi Pengeluaran Mingguan</Typography>
+        {/* Total Keseluruhan */}
+        <Box sx={{ mb: 2, mt: 1, p: 2, bgcolor: '#ede7f6', borderRadius: 2, textAlign: 'center' }}>
+          <Typography variant="subtitle1" fontWeight={700} color="#7c4dff">
+            Total Pengeluaran Keseluruhan
+          </Typography>
+          <Typography variant="h5" fontWeight={700} color="#512da8">
+            Rp{totalAll.toLocaleString()}
+          </Typography>
+        </Box>
         <Bar
           data={{
             labels: weekDates,
@@ -369,9 +392,32 @@ function App() {
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 4 }}>
           <Typography variant="h6">Rekap Pengeluaran Bulan {dayjs(monthView).format('MMMM YYYY')}</Typography>
           <Box>
-            <Button size="small" onClick={() => setMonthView(monthsWithData[currentMonthIdx - 1])} disabled={!canPrevMonth}>&lt;</Button>
-            <Button size="small" onClick={() => setMonthView(monthsWithData[currentMonthIdx + 1])} disabled={!canNextMonth}>&gt;</Button>
+            <IconButton
+              size="large"
+              onClick={() => setMonthView(monthsWithData[currentMonthIdx - 1])}
+              disabled={!canPrevMonth}
+              sx={{ color: canPrevMonth ? 'error.main' : 'grey.400', border: '2px solid', borderColor: canPrevMonth ? 'error.main' : 'grey.300', mx: 1, bgcolor: canPrevMonth ? '#fff0f0' : 'grey.100', boxShadow: 2 }}
+            >
+              <ChevronLeftIcon fontSize="inherit" />
+            </IconButton>
+            <IconButton
+              size="large"
+              onClick={() => setMonthView(monthsWithData[currentMonthIdx + 1])}
+              disabled={!canNextMonth}
+              sx={{ color: canNextMonth ? 'error.main' : 'grey.400', border: '2px solid', borderColor: canNextMonth ? 'error.main' : 'grey.300', mx: 1, bgcolor: canNextMonth ? '#fff0f0' : 'grey.100', boxShadow: 2 }}
+            >
+              <ChevronRightIcon fontSize="inherit" />
+            </IconButton>
           </Box>
+        </Box>
+        {/* Total Bulanan */}
+        <Box sx={{ mb: 2, mt: 1, p: 2, bgcolor: '#e3f2fd', borderRadius: 2, textAlign: 'center' }}>
+          <Typography variant="subtitle2" fontWeight={700} color="#1976d2">
+            Total Pengeluaran Bulan Ini
+          </Typography>
+          <Typography variant="h6" fontWeight={700} color="#1976d2">
+            Rp{totalMonth.toLocaleString()}
+          </Typography>
         </Box>
         <Box sx={{ overflowX: 'auto', width: '100%', pb: 2 }}>
           <Box sx={{ minWidth: { xs: 400, sm: Math.max(600, monthDates.length * 60) }, maxWidth: '100%' }}>
@@ -437,36 +483,50 @@ function App() {
             </ListItem>
           ))}
         </List>
-        <Typography variant="h6" sx={{ mt: 4 }}>Semua Pengeluaran (per Tanggal)</Typography>
-        {fullDates.map(date => (
-          <Accordion key={date} sx={{ mb: 1 }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography sx={{ fontWeight: 600 }}>{date}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
+        <Typography variant="h6" sx={{ mt: 4 }}>Lihat Pengeluaran Per Tanggal</Typography>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="Pilih Tanggal"
+            value={selectedDate ? dayjs(selectedDate) : null}
+            onChange={val => {
+              if (val) {
+                const dateStr = val.format('YYYY-MM-DD');
+                setSelectedDate(dateStr);
+                setDateDialogExpenses(expensesByDate[dateStr] || []);
+                setOpenDateDialog(true);
+              }
+            }}
+            maxDate={dayjs(getTodayDate())}
+            minDate={dayjs(minDate)}
+            slotProps={{ textField: { fullWidth: true, sx: { mt: 2, mb: 2 } } }}
+          />
+        </LocalizationProvider>
+        <Dialog open={openDateDialog} onClose={() => setOpenDateDialog(false)}>
+          <DialogTitle>Pengeluaran Tanggal {selectedDate}</DialogTitle>
+          <DialogContent>
+            {dateDialogExpenses.length === 0 ? (
+              <Typography>Tidak ada pengeluaran.</Typography>
+            ) : (
               <List>
-                {expensesByDate[date].length === 0 ? (
-                  <ListItem>
-                    <ListItemText primary="Tidak ada pengeluaran." />
+                {dateDialogExpenses.map((e: Expense) => (
+                  <ListItem key={e.id} secondaryAction={
+                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteExpense(e.id)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  }>
+                    <ListItemText
+                      primary={e.description}
+                      secondary={`Rp${e.amount.toLocaleString()} | ${e.date}`}
+                    />
                   </ListItem>
-                ) : (
-                  expensesByDate[date].map((e: Expense) => (
-                    <ListItem key={e.id} secondaryAction={
-                      <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteExpense(e.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    }>
-                      <ListItemText
-                        primary={e.description}
-                        secondary={`Rp${e.amount.toLocaleString()} | ${e.date}`}
-                      />
-                    </ListItem>
-                  ))
-                )}
+                ))}
               </List>
-            </AccordionDetails>
-          </Accordion>
-        ))}
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDateDialog(false)}>Tutup</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }
